@@ -26,8 +26,17 @@
 
       function connectToServer() {
           attempt++;
-          console.log("Connect to server, attempt # "+ attempt);
-          ws = new WebSocket("ws://127.0.0.1:6789/");
+          var ws_server;
+          var ws_port = "6789";
+          if (window.location.protocol.startsWith ("http")) {
+              ws_server = ws_server || window.location.hostname;
+          } else {
+              throw new Error ("Don't know how to connect to the signalling server with uri" + window.location);
+          }
+          var ws_url = 'ws://' + ws_server + ':' + ws_port
+
+          console.log("Connect to server " + ws_url + ", attempt # "+ attempt);
+          ws = new WebSocket(ws_url);
           ws.addEventListener('close', onServerClose);
       }
       connectToServer();
