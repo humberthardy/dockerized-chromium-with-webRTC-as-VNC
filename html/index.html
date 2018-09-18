@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--
+  vim: set sts=2 sw=2 et :
+
+
+  Demo Javascript app for negotiating and streaming a sendrecv webrtc stream
+  with a GStreamer app. Runs only in passive mode, i.e., responds to offers
+  with answers, exchanges ICE candidates, and streams.
+
+  Author: Nirbheek Chauhan <nirbheek@centricular.com>
+-->
+<html>
+  <head>
+    <style>
+      .error { color: red; }
+    </style>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="webrtc.js"></script>
+    <script>
+
+      var ws = null;
+      var attempt = 0;
+      function onServerClose(event) {
+          setTimeout(connectToServer, 1000)
+      }
+
+      function connectToServer() {
+          attempt++;
+          console.log("Connect to server, attempt # "+ attempt);
+          ws = new WebSocket("ws://127.0.0.1:6789/");
+          ws.addEventListener('close', onServerClose);
+      }
+      connectToServer();
+
+      function scaleToScreen() {
+          var RemoteWidth = 1280;
+          var RemoteHeight = 1080;
+          var currentWindowWidth = window.innerWidth;
+          var currentWindowHeight = window.innerHeight;
+
+
+          console.log("resize to " + currentWindowWidth + "," + currentWindowHeight);
+          getScreen().style.width = currentWindowWidth  + "px";
+          getScreen().style.height = currentWindowHeight + "px";
+          //getVideo().style.width = currentWindowWidth + "px";
+          //getVideo().style.height = currentWindowHeight + "px";
+
+      }
+
+      window.onresize = scaleToScreen;
+
+
+
+
+      function onmouseEvent (name, event) {
+          var x = getX(event);
+          var y = getY(event);
+          var button = event.button;
+          console.info("Event " + name + " (" + x + "," + y+ ") button=" + button);
+          body = {
+              action: name,
+              parameter: {
+                  x: x,
+                  y: y,
+                  button: button
+              }
+          }
+          ws.send(JSON.stringify(body));
+      }
+
+      function onKeyEvent(name, event) {
+          var key = event.key;
+          console.info("Event " + name + "on (" + key + ")");
+          body = {
+              action: name,
+              parameter: {
+                  key: key,
+              }
+          }
+          ws.send(JSON.stringify(body));
+      }
+      function getScreen() {
+          return document.getElementById("screen");
+      }
+      function getVideo() {
+          return document.getElementById("stream");
+      }
+
+      function getX(event) {
+          var x = event.pageX;
+          var width = getVideo().offsetWidth;
+          return x/width;
+      }
+
+      function getY(event) {
+          var y = event.pageY;
+          var height = getVideo().offsetHeight;
+          return y/height;
+      }
+      window.onload = function(e) {
+          scaleToScreen(); // quick hack for now
+
+
+
+
+          websocketServerConnect(e);
+
+          var screen = getVideo()
+          screen.onclick = function(event) {
+              onmouseEvent("onclick", event);
+              event.preventDefault();
+          }
+          screen.onmousedown = function(event) {
+              onmouseEvent("onmousedown", event);
+              event.preventDefault();
+          }
+          screen.onmouseup = function(event) {
+              onmouseEvent("onmouseup", event);
+              event.preventDefault();
+          }
+          screen.onkeydown = function(event) {
+              onKeyEvent("onkeydown", event)
+              event.preventDefault();
+              //var key = event.key;
+              //onkeydown(key)
+
+              //console.log("onkeydown " + event.charCode);
+              //console.log("onkeydown " + key);
+              //console.log("onkeydown " + event.keyCode);
+
+          }
+          screen.onkeyup = function(event) {
+              onKeyEvent("onkeyup", event);
+              event.preventDefault();
+              //var key = event.key;
+              //onkeyup(key)
+              //console.log("onkeyup " + key);
+          }
+
+      }
+
+
+
+
+    </script>
+  </head>
+
+  <body>
+    <div id="screen" contenteditable="true"; style="background-color: red;">
+      <video id="stream" style="max-width: 100%; max-height:100%; display: inline-block;" autoplay>Your browser doesn't support video</video>
+    </div>
+    <div>Status: <span id="status">unknown</span></div>
+    <div>Our id is <b id="peer-id">unknown</b></div>
+    <br/>
+    <div>
+      <div>getUserMedia constraints being used:</div>
+      <div><textarea id="constraints" cols=40 rows=4></textarea></div>
+    </div>
+  </body>
+</html>

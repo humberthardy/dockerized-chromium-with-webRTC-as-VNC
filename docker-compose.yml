@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  # uncomment the sendrecv you would like to use
+  #
+
+  # build-gst-rust:
+  #  build: ./gst-rust
+  #  volumes:
+  #    - ./gst-rust:/opt
+  browser_hh:
+    image: browserhh
+    build: ./browser
+    ports:
+      - 6789:6789
+    environment:
+      - SCREEN_WIDTH=1280
+      - SCREEN_HEIGHT=760
+      - SCREEN_DEPTH=16
+      - VNC_PASS=test
+
+
+  html:
+    build: ./html
+    ports:
+      - 8080:80
+    depends_on:
+      - signalling
+    volumes:
+      - ./html/:/usr/share/nginx/html/
+  signalling:
+    build: ./signalling
+    ports:
+      - 8443:8443
