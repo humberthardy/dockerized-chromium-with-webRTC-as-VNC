@@ -53,6 +53,7 @@
           getScreen().style.height = currentWindowHeight + "px";
           //getVideo().style.width = currentWindowWidth + "px";
           //getVideo().style.height = currentWindowHeight + "px";
+          getScreen().focus();
 
       }
 
@@ -114,16 +115,17 @@
 
           websocketServerConnect(e);
 
-          var screen = getVideo()
-          screen.onclick = function(event) {
+          var screen = getScreen();
+          var video  = getVideo();
+          video.onclick = function(event) {
               onmouseEvent("onclick", event);
               event.preventDefault();
           }
-          screen.onmousedown = function(event) {
+          video.onmousedown = function(event) {
               onmouseEvent("onmousedown", event);
               event.preventDefault();
           }
-          screen.onmouseup = function(event) {
+          video.onmouseup = function(event) {
               onmouseEvent("onmouseup", event);
               event.preventDefault();
           }
