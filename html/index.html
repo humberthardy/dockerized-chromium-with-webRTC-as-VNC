@@ -13,10 +13,27 @@
   <head>
     <style>
       .error { color: red; }
+
+      video {
+        position: absolute;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+      }
+
     </style>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="webrtc.js"></script>
     <script>
+
+      String.prototype.format = function() {
+          a = this;
+          for (k in arguments) {
+              a = a.replace("{" + k + "}", arguments[k])
+          }
+          return a
+      }
 
       var ws = null;
       var attempt = 0;
@@ -53,6 +70,9 @@
           getScreen().style.height = currentWindowHeight + "px";
           //getVideo().style.width = currentWindowWidth + "px";
           //getVideo().style.height = currentWindowHeight + "px";
+
+          //getVideo().style.webkitTransform = "scale({0}, {1})".format(currentWindowWidth, currentWindowHeight);
+
           getScreen().focus();
 
       }
@@ -110,6 +130,9 @@
       window.onload = function(e) {
           scaleToScreen(); // quick hack for now
 
+          document.addEventListener("contextmenu", function(e){
+              e.preventDefault();
+          }, false);
 
 
 
@@ -119,18 +142,26 @@
           var video  = getVideo();
           video.onclick = function(event) {
               onmouseEvent("onclick", event);
+              event.stopImmediatePropagation();
+              event.stopPropagation();
               event.preventDefault();
           }
           video.onmousedown = function(event) {
               onmouseEvent("onmousedown", event);
+              event.stopImmediatePropagation();
+              event.stopPropagation();
               event.preventDefault();
           }
           video.onmouseup = function(event) {
               onmouseEvent("onmouseup", event);
+              event.stopImmediatePropagation();
+              event.stopPropagation();
               event.preventDefault();
           }
           screen.onkeydown = function(event) {
               onKeyEvent("onkeydown", event)
+              event.stopImmediatePropagation();
+              event.stopPropagation();
               event.preventDefault();
               //var key = event.key;
               //onkeydown(key)
@@ -142,6 +173,8 @@
           }
           screen.onkeyup = function(event) {
               onKeyEvent("onkeyup", event);
+              event.stopImmediatePropagation();
+              event.stopPropagation();
               event.preventDefault();
               //var key = event.key;
               //onkeyup(key)
@@ -158,7 +191,7 @@
 
   <body>
     <div id="screen" contenteditable="true"; style="background-color: red;">
-      <video id="stream" contenteditable="true" style="max-width: 100%; max-height:100%; display: inline-block;" autoplay>Your browser doesn't support video</video>
+      <video id="stream" contenteditable="true" autoplay>Your browser doesn't support video</video>
     </div>
     <div>Status: <span id="status">unknown</span></div>
     <div>Our id is <b id="peer-id">unknown</b></div>

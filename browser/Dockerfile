@@ -6,7 +6,7 @@ EXPOSE 6789
 USER root
 
 
-RUN apt-get --assume-yes install scrot python3-tk python3-dev
+RUN apt-get --assume-yes install scrot python3-tk python3-dev nload
 
 COPY . /webrtc
 WORKDIR /webrtc

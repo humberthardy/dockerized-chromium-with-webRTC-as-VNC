@@ -22,6 +22,7 @@ pyautogui.FAILSAFE = False
 width, height = pyautogui.size()
 
 def mapper(key):
+
     if key == 'Control':
         return 'ctrl'
     elif key == 'Shift':
@@ -30,6 +31,10 @@ def mapper(key):
         return 'enter'
     elif key == 'Alt':
         return 'alt'
+    elif key == 'F11':
+        return 'f11'
+    elif key == 'Escape':
+        return 'esc'
     else:
         return key
 

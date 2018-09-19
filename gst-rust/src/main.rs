@@ -5,6 +5,7 @@ extern crate glib;
 extern crate gstreamer as gst;
 extern crate gstreamer_sdp as gst_sdp;
 extern crate gstreamer_webrtc as gst_webrtc;
+
 extern crate rand;
 extern crate serde;
 #[macro_use]
@@ -43,6 +44,18 @@ lazy_static! {
             ],
         )
     };
+
+        static ref RTP_CAPS_VP9: gst::Caps = {
+        gst::Caps::new_simple(
+            "application/x-rtp",
+            &[
+                ("media", &"video"),
+                ("encoding-name", &"VP9"),
+                ("payload", &(96i32)),
+            ],
+        )
+    };
+
     static ref DESKTOP_CAPTURE_CAPS: gst::Caps = {
         gst::Caps::new_simple(
             "video/x-raw",
@@ -102,6 +115,7 @@ struct AppControlInner {
     peer_id: String,
     main_loop: glib::MainLoop,
     bus: gst::Bus,
+
 }
 
 #[derive(Debug, Fail)]
@@ -326,15 +340,58 @@ fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     //let videotestsrc = gst::ElementFactory::make("videotestsrc", None).unwrap();
     let videoconvert = gst::ElementFactory::make("videoconvert", None).unwrap();
     let queue = gst::ElementFactory::make("queue", None).unwrap();
+/*
+    // VP 9
+    let vp9enc = gst::ElementFactory::make("vp9enc", None).unwrap();
+//    vp9enc.set_property("deadline", &3000i64).unwrap();
+//    vp9enc.set_property("buffer-size", &100i32).unwrap();
+//    vp9enc.set_property("buffer-initial-size", &100i32).unwrap();
+//    vp9enc.set_property("buffer-optimal-size", &100i32).unwrap();
+//    vp9enc.set_property("keyframe-max-dist", &30i32).unwrap();
+//    vp9enc.set_property("cpu-used", &15i32).unwrap();
+
+    let rtpvp9pay = gst::ElementFactory::make("rtpvp9pay", None).unwrap();
+    let queue2 = gst::ElementFactory::make("queue", None).unwrap();
+    let convert_lat:u64 = 500000000; //100ms
+    let webrtc_lat:u64 = 4000000; //20ms
+    queue.set_property("max-size-time", &convert_lat).unwrap();
+    queue2.set_property("max-size-time", &webrtc_lat).unwrap();
+
+
+    pipeline.add_many(&[
+        &ximagesrc,
+        &videoconvert,
+        &queue,
+        &vp9enc,
+        &rtpvp9pay,
+        &queue2,
+    ])?;
+
+    ximagesrc.link_filtered(&videoconvert, &*DESKTOP_CAPTURE_CAPS)?;
+
+    gst::Element::link_many(&[
+        // &ximagesrc,
+        &videoconvert,
+        &queue,
+        &vp9enc,
+        &rtpvp9pay,
+        &queue2,
+    ])?;
+
+    queue2.link_filtered(webrtcbin, &*RTP_CAPS_VP9)?;
+*/
+
+    // VP8
     let vp8enc = gst::ElementFactory::make("vp8enc", None).unwrap();
 
-    ximagesrc.set_property("startx", &0u32).unwrap();
-    ximagesrc.set_property("starty", &0u32).unwrap();
-    ximagesrc.set_property("endx", &(1920u32)).unwrap();
-    ximagesrc.set_property("endy", &(1000u32)).unwrap();
+//    ximagesrc.set_property("startx", &0u32).unwrap();
+//    ximagesrc.set_property("starty", &0u32).unwrap();
+//    ximagesrc.set_property("endx", &(1920u32)).unwrap();
+//    ximagesrc.set_property("endy", &(1000u32)).unwrap();
 
-    //videotestsrc.set_property_from_str("pattern", "ball");
-    vp8enc.set_property("deadline", &1i64).unwrap();
+    let deadline = 30000i64.to_value();
+
+    vp8enc.set_property("deadline", &deadline).unwrap();
 
     let rtpvp8pay = gst::ElementFactory::make("rtpvp8pay", None).unwrap();
     let queue2 = gst::ElementFactory::make("queue", None).unwrap();
@@ -342,15 +399,15 @@ fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     vp8enc.set_property("buffer-size", &100i32).unwrap();
     vp8enc.set_property("buffer-initial-size", &100i32).unwrap();
     vp8enc.set_property("buffer-optimal-size", &100i32).unwrap();
+    vp8enc.set_property("keyframe-max-dist", &30i32).unwrap();
+    vp8enc.set_property("cpu-used", &15i32).unwrap();
+    //let value = gst::utgst_util_set_object_arg()
+    //vp8enc.set_property("error-resilient", &value).unwrap();
 
-    let convert_lat:u64 = 500000000; //100ms
-    let webrtc_lat:u64 = 4000000; //20ms
+    let convert_lat = 100000000u64.to_value(); //100ms
+    let webrtc_lat = 2000000u64.to_value(); //20ms
     queue.set_property("max-size-time", &convert_lat).unwrap();
     queue2.set_property("max-size-time", &webrtc_lat).unwrap();
-
-    //queue.set_property_from_str("leaky", "GST_QUEUE_LEAK_DOWNSTREAM");
-
-
 
 
     pipeline.add_many(&[
@@ -365,7 +422,6 @@ fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     ximagesrc.link_filtered(&videoconvert, &*DESKTOP_CAPTURE_CAPS)?;
 
     gst::Element::link_many(&[
-       // &ximagesrc,
         &videoconvert,
         &queue,
         &vp8enc,
@@ -377,6 +433,7 @@ fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     queue2.link_filtered(webrtcbin, &*RTP_CAPS_VP8)?;
 
     Ok(())
+
 }
 
 fn add_audio_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Result<(), Error> {
@@ -406,44 +463,6 @@ fn add_audio_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
 
     queue3.link_filtered(webrtcbin, &*RTP_CAPS_OPUS).unwrap();
 
-
-/*
-
-    let audiotestsrc = gst::ElementFactory::make("audiotestsrc", None).unwrap();
-    let queue = gst::ElementFactory::make("queue", None).unwrap();
-    let audioconvert = gst::ElementFactory::make("audioconvert", None).unwrap();
-    let audioresample = gst::ElementFactory::make("audioresample", None).unwrap();
-    let queue2 = gst::ElementFactory::make("queue", None).unwrap();
-    let opusenc = gst::ElementFactory::make("opusenc", None).unwrap();
-    let rtpopuspay = gst::ElementFactory::make("rtpopuspay", None).unwrap();
-    let queue3 = gst::ElementFactory::make("queue", None).unwrap();
-
-    audiotestsrc.set_property_from_str("wave", "red-noise");
-
-    pipeline.add_many(&[
-        &audiotestsrc,
-        &queue,
-        &audioconvert,
-        &audioresample,
-        &queue2,
-        &opusenc,
-        &rtpopuspay,
-        &queue3,
-    ])?;
-
-    gst::Element::link_many(&[
-        &audiotestsrc,
-        &queue,
-        &audioconvert,
-        &audioresample,
-        &queue2,
-        &opusenc,
-        &rtpopuspay,
-        &queue3,
-    ])?;
-
-    queue3.link_filtered(webrtcbin, &*RTP_CAPS_OPUS)?;
-*/
     Ok(())
 }
 
@@ -752,7 +771,12 @@ fn receive_loop(
             };
 
             match message {
+
                 OwnedMessage::Close(_) => {
+                    println!("OwnedMessage Close");
+                    let mbuilder =
+                        gst::Message::new_application(gst::Structure::new("error", &[("body", &"peer disconnect")]));
+                    let _ = bus.post(&mbuilder.build());
                     let _ = send_msg_tx.send(OwnedMessage::Close(None));
                     return;
                 }
