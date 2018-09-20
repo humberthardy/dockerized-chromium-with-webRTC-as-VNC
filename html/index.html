@@ -15,11 +15,12 @@
       .error { color: red; }
 
       video {
-        position: absolute;
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        overflow:hidden;
       }
 
     </style>
@@ -116,16 +117,54 @@
           return document.getElementById("stream");
       }
 
+      function getXOffset() {
+          var displayWidth = getVideo().offsetWidth;
+          var displayHeight = getVideo().offsetHeight;
+          var videoWidth = getVideo().videoWidth;
+          var videoHeight = getVideo().videoHeight;
+          var videoRatio = videoHeight / videoWidth;
+          var displayRatio = displayHeight / displayWidth;
+
+          if (displayRatio < videoRatio) {
+              var widthMargin = (displayWidth - (displayHeight/ videoRatio))/2;
+              console.log("computed width margin" + widthMargin);
+              return widthMargin;
+          } else {
+              return 0;
+          }
+      }
+
+      function getYoffset() {
+          var displayWidth = getVideo().offsetWidth;
+          var displayHeight = getVideo().offsetHeight;
+          var videoWidth = getVideo().videoWidth;
+          var videoHeight = getVideo().videoHeight;
+          var videoRatio = videoWidth / videoHeight;
+          var displayRatio = displayWidth / displayHeight;
+
+          if (displayRatio < videoRatio) {
+              var heightMargin = (displayHeight - (displayWidth/ videoRatio))/2;
+              console.log("computed height margin" + heightMargin);
+              return heightMargin;
+          } else {
+              return 0;
+          }
+
+      }
+
+
       function getX(event) {
           var x = event.pageX;
           var width = getVideo().offsetWidth;
-          return x/width;
+          var offset = getXOffset();
+          return (x - offset)/(width - (offset *2));
       }
 
       function getY(event) {
           var y = event.pageY;
           var height = getVideo().offsetHeight;
-          return y/height;
+          var offset = getYoffset();
+          return (y - offset ) / (height - (offset * 2));
       }
       window.onload = function(e) {
           scaleToScreen(); // quick hack for now
@@ -191,8 +230,10 @@
 
   <body>
     <div id="screen" contenteditable="true"; style="background-color: red;">
-      <video id="stream" contenteditable="true" autoplay>Your browser doesn't support video</video>
-    </div>
+
+        <video id="stream" contenteditable="true" autoplay>Your browser doesn't support video</video>
+
+      </div>
     <div>Status: <span id="status">unknown</span></div>
     <div>Our id is <b id="peer-id">unknown</b></div>
     <br/>

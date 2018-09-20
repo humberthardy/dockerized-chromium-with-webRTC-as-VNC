@@ -332,110 +332,6 @@ fn send_ice_candidate_message(app_control: &AppControl, values: &[glib::Value]) 
     app_control.send_text_msg(message);
 }
 
-fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Result<(), Error> {
-
-    let ximagesrc = gst::ElementFactory::make("ximagesrc", None).unwrap();
-
-
-    //let videotestsrc = gst::ElementFactory::make("videotestsrc", None).unwrap();
-    let videoconvert = gst::ElementFactory::make("videoconvert", None).unwrap();
-    let queue = gst::ElementFactory::make("queue", None).unwrap();
-/*
-    // VP 9
-    let vp9enc = gst::ElementFactory::make("vp9enc", None).unwrap();
-//    vp9enc.set_property("deadline", &3000i64).unwrap();
-//    vp9enc.set_property("buffer-size", &100i32).unwrap();
-//    vp9enc.set_property("buffer-initial-size", &100i32).unwrap();
-//    vp9enc.set_property("buffer-optimal-size", &100i32).unwrap();
-//    vp9enc.set_property("keyframe-max-dist", &30i32).unwrap();
-//    vp9enc.set_property("cpu-used", &15i32).unwrap();
-
-    let rtpvp9pay = gst::ElementFactory::make("rtpvp9pay", None).unwrap();
-    let queue2 = gst::ElementFactory::make("queue", None).unwrap();
-    let convert_lat:u64 = 500000000; //100ms
-    let webrtc_lat:u64 = 4000000; //20ms
-    queue.set_property("max-size-time", &convert_lat).unwrap();
-    queue2.set_property("max-size-time", &webrtc_lat).unwrap();
-
-
-    pipeline.add_many(&[
-        &ximagesrc,
-        &videoconvert,
-        &queue,
-        &vp9enc,
-        &rtpvp9pay,
-        &queue2,
-    ])?;
-
-    ximagesrc.link_filtered(&videoconvert, &*DESKTOP_CAPTURE_CAPS)?;
-
-    gst::Element::link_many(&[
-        // &ximagesrc,
-        &videoconvert,
-        &queue,
-        &vp9enc,
-        &rtpvp9pay,
-        &queue2,
-    ])?;
-
-    queue2.link_filtered(webrtcbin, &*RTP_CAPS_VP9)?;
-*/
-
-    // VP8
-    let vp8enc = gst::ElementFactory::make("vp8enc", None).unwrap();
-
-//    ximagesrc.set_property("startx", &0u32).unwrap();
-//    ximagesrc.set_property("starty", &0u32).unwrap();
-//    ximagesrc.set_property("endx", &(1920u32)).unwrap();
-//    ximagesrc.set_property("endy", &(1000u32)).unwrap();
-
-    let deadline = 1i64.to_value();
-
-    vp8enc.set_property("deadline", &deadline).unwrap();
-
-    let rtpvp8pay = gst::ElementFactory::make("rtpvp8pay", None).unwrap();
-    let queue2 = gst::ElementFactory::make("queue", None).unwrap();
-
-    vp8enc.set_property("buffer-size", &100i32).unwrap();
-    vp8enc.set_property("buffer-initial-size", &100i32).unwrap();
-    vp8enc.set_property("buffer-optimal-size", &100i32).unwrap();
-    vp8enc.set_property("keyframe-max-dist", &30i32).unwrap();
-    vp8enc.set_property("cpu-used", &15i32).unwrap();
-    //let value = gst::utgst_util_set_object_arg()
-    //vp8enc.set_property("error-resilient", &value).unwrap();
-
-    let convert_lat = 50000000u64.to_value(); //100ms
-    let webrtc_lat = 20000000u64.to_value(); //20ms
-    queue.set_property("max-size-time", &convert_lat).unwrap();
-    queue2.set_property("max-size-time", &webrtc_lat).unwrap();
-
-
-    pipeline.add_many(&[
-        &ximagesrc,
-        &videoconvert,
-        &queue,
-        &vp8enc,
-        &rtpvp8pay,
-        &queue2,
-    ])?;
-
-    ximagesrc.link_filtered(&videoconvert, &*DESKTOP_CAPTURE_CAPS)?;
-
-    gst::Element::link_many(&[
-        &videoconvert,
-        &queue,
-        &vp8enc,
-        &rtpvp8pay,
-        &queue2,
-    ])?;
-
-
-    queue2.link_filtered(webrtcbin, &*RTP_CAPS_VP8)?;
-
-    Ok(())
-
-}
-
 fn add_audio_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Result<(), Error> {
     let alsasrc = gst::ElementFactory::make("alsasrc", None).unwrap();
     let audioconvert = gst::ElementFactory::make("audioconvert", None).unwrap();
@@ -808,6 +704,113 @@ fn receive_loop(
             }
         }
     })
+}
+
+fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Result<(), Error> {
+
+    let ximagesrc = gst::ElementFactory::make("ximagesrc", None).unwrap();
+
+
+    //let videotestsrc = gst::ElementFactory::make("videotestsrc", None).unwrap();
+    let videoconvert = gst::ElementFactory::make("videoconvert", None).unwrap();
+    let queue = gst::ElementFactory::make("queue", None).unwrap();
+    /*
+        // VP 9
+        let vp9enc = gst::ElementFactory::make("vp9enc", None).unwrap();
+    //    vp9enc.set_property("deadline", &3000i64).unwrap();
+    //    vp9enc.set_property("buffer-size", &100i32).unwrap();
+    //    vp9enc.set_property("buffer-initial-size", &100i32).unwrap();
+    //    vp9enc.set_property("buffer-optimal-size", &100i32).unwrap();
+    //    vp9enc.set_property("keyframe-max-dist", &30i32).unwrap();
+    //    vp9enc.set_property("cpu-used", &15i32).unwrap();
+
+        let rtpvp9pay = gst::ElementFactory::make("rtpvp9pay", None).unwrap();
+        let queue2 = gst::ElementFactory::make("queue", None).unwrap();
+        let convert_lat:u64 = 500000000; //100ms
+        let webrtc_lat:u64 = 4000000; //20ms
+        queue.set_property("max-size-time", &convert_lat).unwrap();
+        queue2.set_property("max-size-time", &webrtc_lat).unwrap();
+
+
+        pipeline.add_many(&[
+            &ximagesrc,
+            &videoconvert,
+            &queue,
+            &vp9enc,
+            &rtpvp9pay,
+            &queue2,
+        ])?;
+
+        ximagesrc.link_filtered(&videoconvert, &*DESKTOP_CAPTURE_CAPS)?;
+
+        gst::Element::link_many(&[
+            // &ximagesrc,
+            &videoconvert,
+            &queue,
+            &vp9enc,
+            &rtpvp9pay,
+            &queue2,
+        ])?;
+
+        queue2.link_filtered(webrtcbin, &*RTP_CAPS_VP9)?;
+    */
+
+    // VP8
+    let vp8enc = gst::ElementFactory::make("vp8enc", None).unwrap();
+
+//    ximagesrc.set_property("startx", &0u32).unwrap();
+//    ximagesrc.set_property("starty", &0u32).unwrap();
+//    ximagesrc.set_property("endx", &(1920u32)).unwrap();
+//    ximagesrc.set_property("endy", &(1000u32)).unwrap();
+
+
+    let rtpvp8pay = gst::ElementFactory::make("rtpvp8pay", None).unwrap();
+    let queue2 = gst::ElementFactory::make("queue", None).unwrap();
+
+    vp8enc.set_property("buffer-size", &100i32).unwrap();
+    vp8enc.set_property("buffer-initial-size", &100i32).unwrap();
+    vp8enc.set_property("buffer-optimal-size", &100i32).unwrap();
+    vp8enc.set_property("keyframe-max-dist", &30i32).unwrap();
+    vp8enc.set_property("cpu-used", &5i32).unwrap();
+    let deadline_realtime = 1i64.to_value();
+
+    vp8enc.set_property("deadline", &deadline_realtime).unwrap();
+
+
+
+    //let value = gst::utgst_util_set_object_arg()
+    //vp8enc.set_property("error-resilient", &value).unwrap();
+
+    let convert_lat = 50000000u64.to_value(); //50ms
+    let webrtc_lat = 20000000u64.to_value(); //20ms
+    queue.set_property("max-size-time", &convert_lat).unwrap();
+    queue2.set_property("max-size-time", &webrtc_lat).unwrap();
+
+
+    pipeline.add_many(&[
+        &ximagesrc,
+        &videoconvert,
+        &queue,
+        &vp8enc,
+        &rtpvp8pay,
+        &queue2,
+    ])?;
+
+    ximagesrc.link_filtered(&videoconvert, &*DESKTOP_CAPTURE_CAPS)?;
+
+    gst::Element::link_many(&[
+        &videoconvert,
+        &queue,
+        &vp8enc,
+        &rtpvp8pay,
+        &queue2,
+    ])?;
+
+
+    queue2.link_filtered(webrtcbin, &*RTP_CAPS_VP8)?;
+
+    Ok(())
+
 }
 
 fn handle_application_msg(
