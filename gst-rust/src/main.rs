@@ -389,7 +389,7 @@ fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
 //    ximagesrc.set_property("endx", &(1920u32)).unwrap();
 //    ximagesrc.set_property("endy", &(1000u32)).unwrap();
 
-    let deadline = 30000i64.to_value();
+    let deadline = 1i64.to_value();
 
     vp8enc.set_property("deadline", &deadline).unwrap();
 
@@ -404,8 +404,8 @@ fn add_video_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     //let value = gst::utgst_util_set_object_arg()
     //vp8enc.set_property("error-resilient", &value).unwrap();
 
-    let convert_lat = 100000000u64.to_value(); //100ms
-    let webrtc_lat = 2000000u64.to_value(); //20ms
+    let convert_lat = 50000000u64.to_value(); //100ms
+    let webrtc_lat = 20000000u64.to_value(); //20ms
     queue.set_property("max-size-time", &convert_lat).unwrap();
     queue2.set_property("max-size-time", &webrtc_lat).unwrap();
 
@@ -442,6 +442,12 @@ fn add_audio_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     let opusenc = gst::ElementFactory::make("opusenc", None).unwrap();
     let rtpopuspay = gst::ElementFactory::make("rtpopuspay", None).unwrap();
     let queue3 = gst::ElementFactory::make("queue", None).unwrap();
+
+    let audio_delay = 100000000u64.to_value(); //0.1sec
+    let audio_delay_max = 110000000u64.to_value(); //.11sec
+
+    queue3.set_property("min-threshold-time", &audio_delay).unwrap();
+    queue3.set_property("max-size-time", &audio_delay_max).unwrap();
 
 
     pipeline.add_many(&[

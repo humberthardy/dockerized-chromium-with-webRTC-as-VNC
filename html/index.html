@@ -37,7 +37,7 @@
 
       var ws = null;
       var attempt = 0;
-      function onServerClose(event) {
+      function onControlServerClose(event) {
           setTimeout(connectToServer, 1000)
       }
 
@@ -54,7 +54,7 @@
 
           console.log("Connect to server " + ws_url + ", attempt # "+ attempt);
           ws = new WebSocket(ws_url);
-          ws.addEventListener('close', onServerClose);
+          ws.addEventListener('close', onControlServerClose);
       }
       connectToServer();
 

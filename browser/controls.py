@@ -35,9 +35,16 @@ def mapper(key):
         return 'f11'
     elif key == 'Escape':
         return 'esc'
+    elif key == 'ArrowRight':
+        return 'right'
+    elif key == 'ArrowLeft':
+        return 'left'
+    elif key == 'ArrowUp':
+        return 'up'
+    elif key == 'ArrowDown':
+        return 'down'
     else:
         return key
-
 
 def mapperX(ratio):
     return math.floor(ratio * width)
