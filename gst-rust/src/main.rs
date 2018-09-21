@@ -339,8 +339,8 @@ fn add_audio_source(pipeline: &gst::Pipeline, webrtcbin: &gst::Element) -> Resul
     let rtpopuspay = gst::ElementFactory::make("rtpopuspay", None).unwrap();
     let queue3 = gst::ElementFactory::make("queue", None).unwrap();
 
-    let audio_delay = 100000000u64.to_value(); //0.1sec
-    let audio_delay_max = 110000000u64.to_value(); //.11sec
+    let audio_delay = 200000000u64.to_value(); //0.2sec
+    let audio_delay_max = 220000000u64.to_value(); //.22sec
 
     queue3.set_property("min-threshold-time", &audio_delay).unwrap();
     queue3.set_property("max-size-time", &audio_delay_max).unwrap();
