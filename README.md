@@ -1,10 +1,15 @@
-Demo: Remove browser (inside Docker) streamed by WebRTC
+Demo - Prrof of concept: Control a remove browser (inside Docker) streamed by WebRTC
 
 ## Compile new pipeline gst-rust
 1 - `cargo build` in `./gst-rust`
 2 - copy `./gst-rust/target/debug/gst-rust` in `./browser/files`
 
 
+## Todo
+- massive clean up
+- dynamic resolution?
+- improve keyboard & mouse events
+- improve latency of the Gstreamer pipeline
 
 
 
