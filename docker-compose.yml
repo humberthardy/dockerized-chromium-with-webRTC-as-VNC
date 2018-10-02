@@ -19,9 +19,10 @@ services:
       - ALL
     tmpfs:
       - /tmp
-    runtime: nvidia
-    volumes:
-      - /tmp/.X11-unix/X0:/tmp/.X11-unix/X0
+# Uncomment to enable OpenGL (if runtimes & drivers are installed)
+#    runtime: nvidia
+#    volumes:
+#      - /tmp/.X11-unix/X0:/tmp/.X11-unix/X0
 
 
   html:
