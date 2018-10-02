@@ -13,7 +13,7 @@ services:
     environment:
       - SCREEN_WIDTH=1280
       - SCREEN_HEIGHT=760
-      - SCREEN_DEPTH=32
+#      - SCREEN_DEPTH=32
       - VNC_PASS=test
     cap_add:
       - ALL
