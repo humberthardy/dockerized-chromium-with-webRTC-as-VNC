@@ -120,9 +120,45 @@ RUN cd /tmp && \
     no-pam-sessions\n\
     ' > /etc/turbovncserver-security.conf
 
-USER browser
+
 ENV PATH ${PATH}:/opt/VirtualGL/bin:/opt/TurboVNC/bin
 
+#
+## Add nvidia Stuff for OpenGl
+#
+
+# Add glvnd
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        libxau6 libxau6:i386 \
+        libxdmcp6 libxdmcp6:i386 \
+        libxcb1 libxcb1:i386 \
+        libxext6 libxext6:i386 \
+        libx11-6 libx11-6:i386 && \
+    rm -rf /var/lib/apt/lists/*
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+        ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+        ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics,compat32,utility,display
+
+# Required for non-glvnd setups.
+ENV LD_LIBRARY_PATH /usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    	libglvnd0 libglvnd0:i386 \
+	libgl1 libgl1:i386 \
+	libglx0 libglx0:i386 \
+	libegl1 libegl1:i386 \
+	libgles2 libgles2:i386 \
+	libglu1
+
+COPY ./files/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+
+
+
+USER browser
 
 # Specific POC
 
@@ -133,11 +169,14 @@ USER root
 
 
 RUN apt install --assume-yes nload
+RUN pip3 install -U setuptools pip
+
+ARG CHROMIUM_COMMAND='chromium-browser --test-type --disable-web-security --allow-outdated-plugins  --ignore-certificate-errors --no-default-browser-check --disable-popup-blocking --disable-background-networking --disable-client-side-phishing-detection --disable-component-update --safebrowsing-disable-auto-update $URL'
 
 
 COPY ./files /webrtc
 WORKDIR /webrtc
-RUN pip3 install -U setuptools pip
+
 RUN pip3 install -r requierements.txt
 run chmod +x /webrtc/entrypoint.sh
 
@@ -151,4 +190,7 @@ ENV PROXY_GET_CA http://mitm.it/cert/pem
 
 
 CMD ""
+ENV URL "https://www.youtube.com/watch?v=ABVjQyTnbIA"
+ENV CHROMIUM_COMMAND $CHROMIUM_COMMAND
+RUN sudo ln -s /usr/bin/python3 /usr/bin/python
 ENTRYPOINT /webrtc/entrypoint.sh

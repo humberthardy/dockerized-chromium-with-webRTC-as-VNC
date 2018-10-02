@@ -1,5 +1,9 @@
 #!/bin/bash
 
+alias python=python3
+
+sudo chown browser:browser /tmp/.X11-unix
+
 function run_forever() {
     while 'true'
     do
@@ -8,6 +12,18 @@ function run_forever() {
       sleep 1
     done
 }
+
+function is_opengl_active() {
+    vglrun glxinfo &> /dev/null
+    if [ $? -ne 0 ]
+    then
+       return 1
+    else
+       return 0
+    fi
+
+}
+
 
 export GEOMETRY="${SCREEN_WIDTH}x${SCREEN_HEIGHT}"
 
@@ -44,7 +60,22 @@ do
 done
 
 jwm -display $DISPLAY &
-run_forever /webrtc/gst-rust --peer-id 1 --server wss://signaling:8443 &
-run_forever chromium-browser --test-type  --no-default-browser-check --disable-popup-blocking --disable-background-networking --disable-client-side-phishing-detection --disable-component-update --safebrowsing-disable-auto-update https://www.youtube.com/watch?v=ABVjQyTnbIA
 
+
+# If vglrun is working, then wrap chromium command
+if is_opengl_active ; then
+    echo "OpenGL is active"
+    CHROMIUM_COMMAND="vglrun $CHROMIUM_COMMAND"
+    CHROMIUM_COMMAND=$(echo ${CHROMIUM_COMMAND/chromium-browser/chromium-browser --disable-gpu-sandbox})
+else
+    echo "OpenGL is inactive"
+fi
+
+CHROMIUM_COMMAND=$(echo $CHROMIUM_COMMAND | envsubst)
+
+echo "Chromium command is $CHROMIUM_COMMAND"
+
+
+run_forever /webrtc/gst-rust --peer-id 1 --server wss://signaling:8443 &
+run_forever $CHROMIUM_COMMAND
 
