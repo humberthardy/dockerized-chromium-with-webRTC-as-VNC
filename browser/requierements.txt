@@ -1,3 +1,0 @@
-websockets
-pyautogui
-python3-xlib

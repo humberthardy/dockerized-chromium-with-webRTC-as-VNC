@@ -1,23 +1,24 @@
 version: '3'
 
 services:
-  # uncomment the sendrecv you would like to use
-  #
 
-  # build-gst-rust:
-  #  build: ./gst-rust
-  #  volumes:
-  #    - ./gst-rust:/opt
-  browser_hh:
-    image: browserhh
-    build: ./browser
+  browser_webrtc:
+    image: browser-full-webrtc
+    build:
+      context: ./browser
+      args:
+        CHROMIUM_VERSION: "65.0.3325.181-0ubuntu0.16.04.1"
     ports:
       - 6789:6789
+    tmpfs:
+      - /tmp
     environment:
       - SCREEN_WIDTH=1280
       - SCREEN_HEIGHT=760
       - SCREEN_DEPTH=16
       - VNC_PASS=test
+    cap_add:
+    - ALL
 
 
   html:
