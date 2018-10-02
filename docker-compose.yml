@@ -26,10 +26,10 @@ services:
     ports:
       - 8080:80
     depends_on:
-      - signalling
+      - signaling
     volumes:
       - ./html/:/usr/share/nginx/html/
-  signalling:
-    build: ./signalling
+  signaling:
+    build: ./signaling
     ports:
       - 8443:8443

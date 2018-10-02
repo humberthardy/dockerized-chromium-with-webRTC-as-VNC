@@ -44,7 +44,7 @@ do
 done
 
 jwm -display $DISPLAY &
-run_forever /webrtc/gst-rust --peer-id 1 --server wss://signalling:8443 &
+run_forever /webrtc/gst-rust --peer-id 1 --server wss://signaling:8443 &
 run_forever chromium-browser --test-type  --no-default-browser-check --disable-popup-blocking --disable-background-networking --disable-client-side-phishing-detection --disable-component-update --safebrowsing-disable-auto-update https://www.youtube.com/watch?v=ABVjQyTnbIA
 
 
