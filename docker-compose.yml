@@ -13,13 +13,13 @@ services:
     environment:
       - SCREEN_WIDTH=1280
       - SCREEN_HEIGHT=760
-      - SCREEN_DEPTH=16
+      - SCREEN_DEPTH=32
       - VNC_PASS=test
     cap_add:
       - ALL
     tmpfs:
       - /tmp
-# Uncomment to enable OpenGL (if runtimes & drivers are installed)
+# Uncomment to enable OpenGL (if nvidia-docker runtime & drivers should be installed, and rela X server should accept connection)
 #    runtime: nvidia
 #    volumes:
 #      - /tmp/.X11-unix/X0:/tmp/.X11-unix/X0
